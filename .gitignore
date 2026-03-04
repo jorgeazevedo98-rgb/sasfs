@@ -29,4 +29,4 @@ database.json
 Thumbs.db
 
 # System Services
-*.service
+# *.service (Removed to allow versioning of service templates)
