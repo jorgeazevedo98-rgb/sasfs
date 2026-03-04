@@ -104,7 +104,28 @@ Restart=always
 WantedBy=multi-user.target
 EOF
 
-# 9. Activation
+# 9. Admin User Creation (Interactive)
+echo -e "${BLUE}=== Admin User Setup ===${NC}"
+echo "We need to create the first administrator account to access the dashboard."
+
+read -p "Enter Admin Username: " ADMIN_USER
+while [[ -z "$ADMIN_USER" ]]; do
+    read -p "Username cannot be empty. Enter Admin Username: " ADMIN_USER
+done
+
+# Read password silently
+read -s -p "Enter Admin Password: " ADMIN_PASS
+echo "" # New line after silent input
+while [[ -z "$ADMIN_PASS" ]]; do
+    read -s -p "Password cannot be empty. Enter Admin Password: " ADMIN_PASS
+    echo ""
+done
+
+echo -e "${BLUE}Creating admin user in database...${NC}"
+cd "$INSTALL_DIR/backend"
+node scripts/setup-admin.js "$ADMIN_USER" "$ADMIN_PASS" || echo -e "${RED}Warning: Failed to create admin user automatically.${NC}"
+
+# 10. Activation
 echo -e "${BLUE}Enabling and starting services...${NC}"
 systemctl daemon-reload
 systemctl enable fs-sas-backend.service
@@ -115,4 +136,5 @@ systemctl restart fs-sas-frontend.service
 echo -e "${GREEN}=== Installation Completed Successfully! ===${NC}"
 echo -e "${BLUE}Backend is running on port 3001${NC}"
 echo -e "${BLUE}Frontend is running on port 5173${NC}"
+echo -e "${BLUE}Admin Dashboard: http://YOUR_SERVER_IP:5173${NC}"
 echo -e "${BLUE}Samba Root: $SAMBA_ROOT${NC}"
