@@ -30,8 +30,8 @@ echo -e "${BLUE}Updating system packages...${NC}"
 apt-get update && apt-get upgrade -y
 
 # 3. Essential Dependencies
-echo -e "${BLUE}Installing essential dependencies (curl, git, build-essential, samba, quota)...${NC}"
-apt-get install -y curl git build-essential samba quota quotatool
+echo -e "${BLUE}Installing essential dependencies (curl, git, build-essential, samba, quota, vsftpd)...${NC}"
+apt-get install -y curl git build-essential samba quota quotatool vsftpd
 
 # 4. Install Node.js (Latest LTS)
 if ! command -v node &> /dev/null; then
@@ -104,6 +104,29 @@ Restart=always
 WantedBy=multi-user.target
 EOF
 
+# 8. FTP Configuration (vsftpd)
+echo -e "${BLUE}Configuring FTP Server (vsftpd)...${NC}"
+cat > /etc/vsftpd.conf <<EOF
+listen=NO
+listen_ipv6=YES
+anonymous_enable=NO
+local_enable=YES
+write_enable=YES
+local_umask=022
+dirmessage_enable=YES
+use_localtime=YES
+xferlog_enable=YES
+connect_from_port_20=YES
+chroot_local_user=YES
+allow_writeable_chroot=YES
+secure_chroot_dir=/var/run/vsftpd/empty
+pam_service_name=vsftpd
+pasv_enable=YES
+pasv_min_port=30000
+pasv_max_port=30099
+check_shell=NO
+EOF
+
 # 9. Admin User Creation (Interactive)
 echo -e "${BLUE}=== Admin User Setup ===${NC}"
 echo "We need to create the first administrator account to access the dashboard."
@@ -130,11 +153,14 @@ echo -e "${BLUE}Enabling and starting services...${NC}"
 systemctl daemon-reload
 systemctl enable fs-sas-backend.service
 systemctl enable fs-sas-frontend.service
+systemctl enable vsftpd
 systemctl restart fs-sas-backend.service
 systemctl restart fs-sas-frontend.service
+systemctl restart vsftpd
 
 echo -e "${GREEN}=== Installation Completed Successfully! ===${NC}"
 echo -e "${BLUE}Backend is running on port 3001${NC}"
 echo -e "${BLUE}Frontend is running on port 5173${NC}"
+echo -e "${BLUE}FTP is running on port 21 (PASV: 30000-30099)${NC}"
 echo -e "${BLUE}Admin Dashboard: http://YOUR_SERVER_IP:5173${NC}"
 echo -e "${BLUE}Samba Root: $SAMBA_ROOT${NC}"
