@@ -46,12 +46,14 @@
   }
 
   .glass-card:hover {
-    @apply bg-[var(--glass-hover)] border-white/20 shadow-[0_0_30px_-10px_rgba(59, 130, 246, 0.2)];
+    @apply bg-[var(--glass-hover)] border-white/20;
+    box-shadow: 0 0 30px -10px rgba(59, 130, 246, 0.2);
     transform: translateY(-2px);
   }
 
   .premium-btn {
-    @apply px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-semibold transition-all duration-300 shadow-[0_8px_30px_rgba(59, 130, 246, 0.3)] active:scale-95 flex items-center justify-center gap-2;
+    @apply px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-semibold transition-all duration-300 active:scale-95 flex items-center justify-center gap-2;
+    box-shadow: 0 8px 30px rgba(59, 130, 246, 0.3);
   }
 
   .nav-item {
@@ -59,7 +61,8 @@
   }
 
   .nav-item-active {
-    @apply bg-blue-600 text-white shadow-[0_4px_20px_rgba(59, 130, 246, 0.3)];
+    @apply bg-blue-600 text-white;
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
   }
 
   .stat-label {
