@@ -10,7 +10,7 @@ import { authMiddleware } from './middleware/authMiddleware';
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = 9002;
 
 app.use(cors({
     origin: '*',

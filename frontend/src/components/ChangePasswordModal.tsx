@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Key, Shield, CheckCircle2 } from 'lucide-react';
 import { userService } from '../services/api';
 
@@ -46,12 +47,12 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
         }
     };
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-md animate-fade-in">
-            <div className="glass-container w-full max-w-md overflow-hidden relative animate-scale-up">
+    return createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in overflow-y-auto">
+            <div className="glass-container w-full max-w-md max-h-[90vh] overflow-y-auto relative animate-scale-up translate-y-12">
                 <button
                     onClick={onClose}
-                    className="absolute top-6 right-6 p-2 text-slate-500 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+                    className="absolute top-6 right-6 p-2 text-slate-500 hover:text-white hover:bg-white/5 rounded-xl transition-all z-10"
                 >
                     <X className="w-5 h-5" />
                 </button>
@@ -133,7 +134,8 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
                     )}
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 

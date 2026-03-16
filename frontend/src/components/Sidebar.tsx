@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout, FolderOpen, Bell, Settings, Database, Users } from 'lucide-react';
+import { Layout, FolderOpen, Bell, Database, Users, History } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface SidebarProps {
@@ -15,7 +15,10 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
         { id: 'dashboard', label: 'Dashboard', icon: Layout },
         { id: 'folders', label: 'Folders', icon: FolderOpen },
         { id: 'alerts', label: 'Alerts', icon: Bell },
-        ...(isAdmin ? [{ id: 'users', label: 'Users', icon: Users }] : []),
+        ...(isAdmin ? [
+            { id: 'users', label: 'Users', icon: Users },
+            { id: 'logs', label: 'Audit Logs', icon: History }
+        ] : []),
     ];
 
     return (
@@ -35,21 +38,13 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
                     <button
                         key={item.id}
                         onClick={() => setActiveTab(item.id)}
-                        className={`w-full nav-item ${activeTab === item.id ? 'nav-item-active' : 'hover:bg-white/5 hover:text-white'
-                            }`}
+                        className={`w-full nav-item ${activeTab === item.id ? 'active' : ''}`}
                     >
-                        <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} />
+                        <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-blue-500' : ''}`} />
                         <span>{item.label}</span>
                     </button>
                 ))}
             </nav>
-
-            <div className="w-full px-6 mt-auto">
-                <button className="w-full nav-item hover:bg-white/5 hover:text-white group">
-                    <Settings className="w-5 h-5 group-hover:rotate-45 transition-transform" />
-                    <span>Settings</span>
-                </button>
-            </div>
         </aside>
     );
 };

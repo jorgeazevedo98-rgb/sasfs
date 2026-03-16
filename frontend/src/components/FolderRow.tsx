@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ChevronRight, Share2, HardDrive, Trash2, Loader2, Edit3 } from 'lucide-react';
 import { folderService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import { formatStorage, calculatePercent } from '../utils/storage';
 
 interface Folder {
@@ -23,20 +24,30 @@ interface FolderRowProps {
 
 const FolderRow: React.FC<FolderRowProps> = ({ folder, onDelete, onDetails, onEdit }) => {
     const { user } = useAuth();
+    const { showNotification, confirm } = useNotification();
     const isAdmin = user?.role === 'admin';
     const [isDeleting, setIsDeleting] = useState(false);
 
     const usagePercent = calculatePercent(folder.usedMB, folder.limitMB);
 
     const handleDelete = async () => {
-        if (!confirm(`Are you sure you want to delete "${folder.name}"? This will ERASE the directory from the disk.`)) return;
+        const ok = await confirm({
+            title: 'Delete Storage Share',
+            message: `Are you sure you want to delete "${folder.name}"? This action will permanently erase the directory from the disk.`,
+            confirmText: 'Delete Permanently',
+            cancelText: 'Keep Share',
+            variant: 'danger'
+        });
+
+        if (!ok) return;
 
         setIsDeleting(true);
         try {
             await folderService.deleteFolder(folder.id);
+            showNotification('success', `Share "${folder.name}" deleted successfully`);
             onDelete();
-        } catch (error) {
-            alert('Error deleting folder. Check console.');
+        } catch (error: any) {
+            showNotification('error', error.response?.data?.message || 'Error deleting share');
             console.error(error);
         } finally {
             setIsDeleting(false);

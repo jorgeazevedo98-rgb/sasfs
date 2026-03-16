@@ -1,24 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Users, UserPlus, Shield, Trash2, Loader2, Calendar, Key } from 'lucide-react';
+import { 
+    Users, 
+    UserPlus, 
+    Trash2, 
+    Shield, 
+    Key, 
+    Loader2, 
+    Calendar
+} from 'lucide-react';
 import { userService } from '../services/api';
+import { useNotification } from '../context/NotificationContext';
 import NewUserModal from './NewUserModal';
 import ChangePasswordModal from './ChangePasswordModal';
 
-interface User {
-    id: number;
-    username: string;
-    role: 'admin' | 'user';
-    createdAt: string;
-}
-
 const UserManagement: React.FC = () => {
-    const [users, setUsers] = useState<User[]>([]);
+    const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-    const [selectedUser, setSelectedUser] = useState<{ id: number, username: string } | null>(null);
-    const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [selectedUser, setSelectedUser] = useState<any>(null);
     const [updatingRoleId, setUpdatingRoleId] = useState<number | null>(null);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
+    const { showNotification, confirm } = useNotification();
 
     const fetchUsers = async () => {
         try {
@@ -26,24 +29,61 @@ const UserManagement: React.FC = () => {
             setUsers(data);
         } catch (error) {
             console.error('Error fetching users:', error);
+            showNotification('error', 'Failed to retrieve user registry');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleRoleToggle = async (id: number, currentRole: 'admin' | 'user') => {
+    useEffect(() => {
+        fetchUsers();
+    }, []);
+
+    const handleRoleToggle = async (id: number, currentRole: string) => {
         const newRole = currentRole === 'admin' ? 'user' : 'admin';
-        if (!confirm(`Are you sure you want to change this user's role to ${newRole}?`)) return;
+        
+        const ok = await confirm({
+            title: 'Change User Role',
+            message: `Are you sure you want to change this user's role to ${newRole}? This affects system access levels.`,
+            confirmText: 'Adjust Role',
+            cancelText: 'Cancel',
+            variant: 'primary'
+        });
+
+        if (!ok) return;
 
         setUpdatingRoleId(id);
         try {
-            await userService.updateRole(id, newRole);
-            await fetchUsers();
+            await userService.updateUserRole(id, newRole);
+            showNotification('success', 'User role updated successfully');
+            fetchUsers();
         } catch (error) {
-            alert('Error updating user role');
-            console.error(error);
+            showNotification('error', 'Error updating user role');
         } finally {
             setUpdatingRoleId(null);
+        }
+    };
+
+    const handleDelete = async (id: number, username: string) => {
+        const ok = await confirm({
+            title: 'Revoke User Access',
+            message: `Are you sure you want to delete user "${username}"? This will immediately terminate their access to the system.`,
+            confirmText: 'Revoke Access',
+            cancelText: 'Cancel',
+            variant: 'danger'
+        });
+
+        if (!ok) return;
+
+        setDeletingId(id);
+        try {
+            await userService.deleteUser(id);
+            showNotification('success', `User "${username}" deleted`);
+            fetchUsers();
+        } catch (error) {
+            showNotification('error', 'Error deleting user');
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -52,31 +92,12 @@ const UserManagement: React.FC = () => {
         setIsPasswordModalOpen(true);
     };
 
-    useEffect(() => {
-        fetchUsers();
-    }, []);
-
-    const handleDelete = async (id: number, username: string) => {
-        if (!confirm(`Are you sure you want to delete user "${username}"?`)) return;
-
-        setDeletingId(id);
-        try {
-            await userService.deleteUser(id);
-            await fetchUsers();
-        } catch (error) {
-            alert('Error deleting user');
-            console.error(error);
-        } finally {
-            setDeletingId(null);
-        }
-    };
-
     return (
-        <div className="animate-slide-up space-y-6">
-            <div className="flex items-center justify-between px-2">
+        <div className="animate-slide-up space-y-8">
+            <div className="relative z-10 flex items-center justify-between px-2 py-4 mb-2">
                 <div>
-                    <h2 className="text-2xl font-black text-white tracking-tight">Platform Users</h2>
-                    <p className="text-slate-500 text-sm mt-1">Manage administrative access levels</p>
+                    <h2 className="text-2xl font-black text-white tracking-tight">Security Controls</h2>
+                    <p className="text-slate-500 text-sm mt-1">Manage administrative and user credentials</p>
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
